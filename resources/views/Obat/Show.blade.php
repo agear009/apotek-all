@@ -1,0 +1,365 @@
+@extends('Layouts.MainPage')
+
+@section('Container')
+
+
+  <section class="discount-coupon py-2 my-2 py-md-5 my-md-5">
+    <div class="container">
+      <div class="bg-gray coupon position-relative p-5">
+        <div class="bold-text position-absolute">10% OFF</div>
+        <div class="row justify-content-between align-items-center">
+          <div class="col-lg-7 col-md-12 mb-3">
+            <div class="coupon-header">
+              <h2 class="display-7">10% OFF Discount Coupons</h2>
+              <p class="m-0">Subscribe us to get 10% OFF on all the purchases</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-12">
+            <div class="btn-wrap">
+              <a href="#" class="btn btn-black btn-medium text-uppercase hvr-sweep-to-right">Email me</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="featured-products" class="product-store">
+    <div class="container-md">
+        <div class="display-header d-flex align-items-center justify-content-between">
+            <h2 class="section-title text-uppercase"> {{ $KategoriObat->name }}</h2>
+            <a href="index.html" class="d-inline-block text-uppercase text-hover fw-bold"></a>
+        </div>
+
+        <div class="product-content padding-small">
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+                @if($Obat->count() > 0)
+                @foreach($NamaCategoridanObat as $p)
+                <div class="col mb-4">
+                    <div class="card h-100 shadow-sm border-0 position-relative rounded-3 overflow-hidden">
+
+                      <!-- Gambar produk -->
+                      <div class="position-relative">
+                        <img src="{{ asset('/storage/public/obats/'.$p->image) }}" class="img-fluid w-100" style="height: 200px; object-fit: cover;" alt="{{ $p->name }}">
+
+                        <!-- Badge promo -->
+                        @if ($p->promo == 'aktif')
+                          <span class="badge bg-danger position-absolute top-0 start-0 m-2">Promo</span>
+                        @endif
+
+                        <!-- Badge jenis obat -->
+                            @if($p->jenis_obat == 'merah' || $p->jenis_obat == 'biru' || $p->jenis_obat == 'hijau')
+                            @php
+                                $warna = match($p->jenis_obat) {
+                                'merah' => 'bg-danger',
+                                'biru' => 'bg-primary',
+                                'hijau' => 'bg-success',
+                                default => 'bg-secondary'
+                                };
+                            @endphp
+                            <span class="jenis-obat-circle position-absolute bottom-0 end-0 m-2" title="Jenis Obat: {{ ucfirst($p->jenis_obat) }}">
+                                <span class="rounded-circle d-inline-block {{ $warna }}" style="width: 24px; height: 24px;"></span>
+                            </span>
+                            @endif
+
+
+                        <!-- Tombol aksi -->
+                        <div class="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2">
+                          <!-- Keranjang -->
+                          <button class="btn btn-sm btn-light rounded-circle shadow" data-bs-toggle="modal" data-bs-target="#beli_obat_{{ $p->id }}" title="Tambah ke Keranjang" onclick="event.stopPropagation();">
+                            <svg width="20" height="20"><use xlink:href="#shopping-carriage"></use></svg>
+                          </button>
+                          <!-- Detail -->
+                          <button class="btn btn-sm btn-light rounded-circle shadow" data-bs-toggle="modal" data-bs-target="#detail_kategori_obat_{{ $p->id }}" title="Lihat Detail" onclick="event.stopPropagation();">
+                            <svg width="20" height="20"><use xlink:href="#quick-view"></use></svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Nama dan harga -->
+                      <div class="card-body px-3 py-2">
+                        <a href="{{ route('obats.show', $p->id) }}" class="text-decoration-none text-dark">
+                          <h5 class="card-title mb-1" style="font-weight: 600; font-size: 1rem; line-height: 1.4; letter-spacing: 0.3px; word-break: break-word;">
+                            {{ $p->name }}
+                          </h5>
+                        </a>
+
+                        @if ($p->promo == 'aktif')
+                          <div>
+                            <span class="text-muted text-decoration-line-through small">Rp {{ number_format($p->harga_coret, 0, ',', '.') }}</span><br>
+                            <span class="fw-bold text-danger">Rp {{ number_format($p->price, 0, ',', '.') }}</span>
+                          </div>
+                        @else
+                          <p class="card-text text-primary fw-semibold mb-0">
+                            Rp {{ number_format($p->price, 0, ',', '.') }}
+                          </p>
+                        @endif
+                        <span>{{ $p->nama_toko }}</span><br>
+                        <span>{{ $p->kota_toko }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+
+
+
+
+                <!-- MODAL UNIK UNTUK SETIAP PRODUK -->
+                    <div class="modal fade" id="detail_kategori_obat_{{ $p->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-fullscreen-md-down modal-md modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <div class="col-lg-12 col-md-12 me-3">
+                                        <div class="image-holder position-relative text-center">
+                                            <img src="{{ asset('/storage/public/obats/'.$p->image) }}" class="product-image img-fluid" style="width: 50%; height: auto;" alt="{{ $p->name }}">
+
+                                            <!-- Badge jenis obat (di pojok kanan bawah gambar) -->
+                                            @if(in_array($p->jenis_obat, ['merah', 'biru', 'hijau']))
+                                                @php
+                                                    $warna = match($p->jenis_obat) {
+                                                        'merah' => 'bg-danger',
+                                                        'biru' => 'bg-primary',
+                                                        'hijau' => 'bg-success',
+                                                        default => 'bg-secondary'
+                                                    };
+                                                @endphp
+                                                <span class="position-absolute bottom-0 end-0 translate-middle-x me-3 mb-3" title="Jenis Obat: {{ ucfirst($p->jenis_obat) }}">
+                                                    <span class="rounded-circle d-inline-block {{ $warna }}" style="width: 28px; height: 28px; border: 2px solid white;"></span>
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                    </div>
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="summary">
+                                            <div class="summary-content fs-6">
+                                                <div class="product-header d-flex justify-content-between mt-4">
+                                                    <h3 class="display-7">{{ $p->name }}</h3>
+                                                    <div class="modal-close-btn">
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                </div>
+
+                                                @if ($p->promo == 'aktif')
+                                                    <span class="product-price fs-3 text-decoration-line-through text-secondary">Rp. {{ number_format($p->harga_coret, 0, ',', '.') }}</span>
+                                                    <span class="product-price fs-3 text-danger">Rp. {{ number_format($p->price, 0, ',', '.') }}</span>
+                                                @else
+                                                    <span class="product-price fs-3">Rp. {{ number_format($p->price, 0, ',', '.') }}</span>
+                                                @endif
+
+                                                <div class="product-details">
+                                                    <p class="fs-7">{!! $p->deskripsi !!}</p>
+                                                    <p class="fs-7">Jangan Digunakan Oleh : {!! $p->jangan_digunakan_oleh !!}</p>
+                                                    <p class="fs-7">Aturan Pakai :{!! $p->aturan_pakai !!}</p>
+                                                    <p class="fs-7">Efek Samping :{!! $p->efek_samping !!}</p>
+                                                    <p class="fs-7">Komposisi :{!! $p->komposisi !!}</p>
+                                                </div>
+
+                                                <ul class="select">
+                                                    <li><strong>Harus Dengan Resep Dokter:</strong> {{ $p->resep }}</li>
+                                                    <li><strong>Dosis:</strong> {{ $p->dosis }}</li>
+                                                    <li><strong>Bentuk:</strong> {{ $p->bentuk }}</li>
+                                                    <li><strong>Kemasan:</strong> {{ $p->kemasan }}</li>
+                                                    <li><strong>Berat:</strong> {{ $p->berat }} gr</li>
+                                                    <li><strong>Produsen:</strong> {{ $p->produsen }} </li>
+                                                    <li><strong>Produksi:</strong> {{ $p->produksi }} </li>
+                                                </ul>
+
+                                                    <!-- modal Form Variasi Produk dan Add to Cart -->
+                                                            <form action="{{ route('keranjang.store') }}" method="POST"  enctype="multipart/form-data" >
+                                                                    @csrf
+                                                                <div class="variations-form shopify-cart">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="quantity d-flex pb-4">
+                                                                                <button type="button" class="btn btn-outline-secondary btn-sm qty-minus">−</button>
+                                                                                <input type="number" id="quantity_{{ $p->id }}" class="form-control text-center mx-2" step="1" min="1" name="jumlah" value="1">
+                                                                                <button type="button" class="btn btn-outline-secondary btn-sm qty-plus">+</button>
+                                                                            </div>
+                                                                            <input type="hidden" class="form-control" id="name" name="name" aria-describedby="Cover" value="{{ $p->name}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="id_toko" aria-describedby="Cover" value="{{ $p->id_toko}}" required readonly>
+                                                                            @if (!Auth::check()) {
+                                                                                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
+                                                                            }
+                                                                            @else
+                                                                            <input type="hidden" class="form-control" id="name" name="id_user" aria-describedby="Cover" value="{{ auth()->user()->id_user}}" required readonly>
+                                                                            @endif
+                                                                            <input type="hidden" class="form-control" id="name" name="id_produk" aria-describedby="Cover" value="{{ $p->id}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="id_user" aria-describedby="Cover" value="{{ Auth::id() }}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="dilihatuser" aria-describedby="Cover" value="0" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="dilihattoko" aria-describedby="Cover" value="0" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="tipe_barang" aria-describedby="Cover" value="Obat" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="price" aria-describedby="Cover" value="{{ $p->price}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="image" aria-describedby="Cover" value="{{ $p->image}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="berat" aria-describedby="Cover" value="{{ $p->berat}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="status" aria-describedby="Cover" value="keranjang" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="jumlah_maksimal_beli" aria-describedby="Cover" value="{{ $p->jumlah_maksimal_beli}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="ongkir_toko" aria-describedby="Cover" value="{{ $p->ongkir_toko}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="ongkir" aria-describedby="Cover" value="{{ $p->ongkir}}" required readonly>
+
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <button type="submit" class="btn btn-medium btn-black">Tambah ke Keranjang</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Modal -->
+
+                <!-- MODAL UNIK UNTUK lANGSUNG KE KERANJANG-->
+                    <div class="modal fade" id="beli_obat_{{ $p->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-fullscreen-md-down modal-md modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <div class="col-lg-12 col-md-12 me-3">
+                                        <div class="image-holder position-relative text-center">
+                                            <img src="{{ asset('/storage/public/obats/'.$p->image) }}" class="product-image img-fluid" style="width: 50%; height: auto;" alt="{{ $p->name }}">
+
+                                            <!-- Badge jenis obat (di pojok kanan bawah gambar) -->
+                                            @if(in_array($p->jenis_obat, ['merah', 'biru', 'hijau']))
+                                                @php
+                                                    $warna = match($p->jenis_obat) {
+                                                        'merah' => 'bg-danger',
+                                                        'biru' => 'bg-primary',
+                                                        'hijau' => 'bg-success',
+                                                        default => 'bg-secondary'
+                                                    };
+                                                @endphp
+                                                <span class="position-absolute bottom-0 end-0 translate-middle-x me-3 mb-3" title="Jenis Obat: {{ ucfirst($p->jenis_obat) }}">
+                                                    <span class="rounded-circle d-inline-block {{ $warna }}" style="width: 28px; height: 28px; border: 2px solid white;"></span>
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                    </div>
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="summary">
+                                            <div class="summary-content fs-6">
+                                                <div class="product-header d-flex justify-content-between mt-4">
+                                                    <h3 class="display-7">{{ $p->name }}</h3>
+                                                    <div class="modal-close-btn">
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                </div>
+
+                                                @if ($p->promo == 'aktif')
+                                                    <span class="product-price fs-3 text-decoration-line-through text-secondary">Rp. {{ number_format($p->harga_coret, 0, ',', '.') }}</span>
+                                                    <span class="product-price fs-3 text-danger">Rp. {{ number_format($p->price, 0, ',', '.') }}</span>
+                                                @else
+                                                    <span class="product-price fs-3">Rp. {{ number_format($p->price, 0, ',', '.') }}</span>
+                                                @endif
+
+                                                <ul class="select">
+                                                    <li><strong>Harus Dengan Resep Dokter:</strong> {{ $p->resep }}</li>
+                                                    <li><strong>Dosis:</strong> {{ $p->dosis }}</li>
+                                                    <li><strong>Bentuk:</strong> {{ $p->bentuk }}</li>
+                                                    <li><strong>Kemasan:</strong> {{ $p->kemasan }}</li>
+                                                    <li><strong>Berat:</strong> {{ $p->berat }} gr</li>
+                                                    <li><strong>Produsen:</strong> {{ $p->produsen }} </li>
+                                                    <li><strong>Produksi:</strong> {{ $p->produksi }} </li>
+                                                </ul>
+
+                                                    <!-- modal Form Variasi Produk dan Add to Cart -->
+                                                            <form action="{{ route('keranjang.store') }}" method="POST"  enctype="multipart/form-data" >
+                                                                    @csrf
+                                                                <div class="variations-form shopify-cart">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="quantity d-flex pb-4">
+                                                                                <button type="button" class="btn btn-outline-secondary btn-sm qty-minus">−</button>
+                                                                                <input type="number" id="quantity_{{ $p->id }}" class="form-control text-center mx-2" step="1" min="1" name="jumlah" value="1">
+                                                                                <button type="button" class="btn btn-outline-secondary btn-sm qty-plus">+</button>
+                                                                            </div>
+                                                                            <input type="hidden" class="form-control" id="name" name="name" aria-describedby="Cover" value="{{ $p->name}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="id_toko" aria-describedby="Cover" value="{{ $p->id_toko}}" required readonly>
+                                                                            @if (!Auth::check()) {
+                                                                                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu!');
+                                                                            }
+                                                                            @else
+                                                                            <input type="hidden" class="form-control" id="name" name="id_user" aria-describedby="Cover" value="{{ auth()->user()->id_user}}" required readonly>
+                                                                            @endif
+                                                                            <input type="hidden" class="form-control" id="name" name="id_produk" aria-describedby="Cover" value="{{ $p->id}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="id_user" aria-describedby="Cover" value="{{ Auth::id() }}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="dilihatuser" aria-describedby="Cover" value="0" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="dilihattoko" aria-describedby="Cover" value="0" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="tipe_barang" aria-describedby="Cover" value="Obat" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="price" aria-describedby="Cover" value="{{ $p->price}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="image" aria-describedby="Cover" value="{{ $p->image}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="berat" aria-describedby="Cover" value="{{ $p->berat}}" required readonly>
+                                                                            <input type="hidden" class="form-control" id="name" name="status" aria-describedby="Cover" value="keranjang" required readonly>
+
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <button type="submit" class="btn btn-medium btn-black">Beli</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Modal -->
+
+                    <!-- Script untuk tombol + dan - -->
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            console.log("✅ Script dimuat!");
+
+                            // Hapus event listener lama untuk menghindari event listener ganda
+                            document.querySelectorAll(".qty-plus, .qty-minus").forEach(button => {
+                                button.replaceWith(button.cloneNode(true));
+                            });
+
+                            document.querySelectorAll(".qty-plus").forEach(button => {
+                                button.addEventListener("click", function() {
+                                    let input = this.closest(".quantity").querySelector("input[type='number']");
+                                    let value = parseInt(input.value) || 1;
+                                    input.value = value + 1;
+                                    console.log(`🔼 Jumlah bertambah: ${input.value}`);
+                                });
+                            });
+
+                            document.querySelectorAll(".qty-minus").forEach(button => {
+                                button.addEventListener("click", function() {
+                                    let input = this.closest(".quantity").querySelector("input[type='number']");
+                                    let value = parseInt(input.value) || 1;
+                                    if (value > 1) {
+                                        input.value = value - 1;
+                                        console.log(`🔽 Jumlah berkurang: ${input.value}`);
+                                    }
+                                });
+                            });
+                        });
+
+
+                    </script>
+
+
+
+
+
+                 @endforeach
+                 @else
+                <p>Tidak ada obat dalam kategori ini.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
+
+
+</section>
+
+@endsection
